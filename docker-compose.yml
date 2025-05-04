@@ -1,0 +1,21 @@
+services:
+  watch-service:
+    build: .
+    ports:
+      - "3004:3004"
+    volumes:
+      - .:/app
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/watchservice
+
+  mongo:
+    image: mongo
+    ports:
+      - "27020:27017"
+    volumes:
+      - watch-data:/data/db
+
+volumes:
+  watch-data:
