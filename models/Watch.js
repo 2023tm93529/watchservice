@@ -4,17 +4,25 @@ const mongoose = require('mongoose');
 const watchSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Assuming "User" model exists in another service
+    ref: 'User', // This is a reference, even though User model is in another service
     required: true
   },
   movieId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Movie', // Assuming "Movie" model exists in the movie service
+    ref: 'Movie', // This is a reference, even though Movie model is in another service
     required: true
   },
   watchedAt: {
     type: Date,
     default: Date.now
+  },
+  watchDuration: {
+    type: Number, // in seconds
+    default: 0
+  },
+  completed: {
+    type: Boolean,
+    default: false
   }
 }, { timestamps: true });
 
