@@ -1,14 +1,34 @@
 const Watch = require('../models/Watch');
 const axios = require('axios');
+const jwt = require('jsonwebtoken');
 
 // Service URLs from environment variables
 const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://user-service-1:3000';
 const MOVIE_SERVICE_URL = process.env.MOVIE_SERVICE_URL || 'http://movie-service-1:3001';
+const JWT_SECRET = process.env.JWT_SECRET || "B7dx9M#p2s%Lq8j5ZGc!K3vF6tY4wRnE";
+
+// Generate a service token for when we don't have a user token
+const generateServiceToken = () => {
+  return jwt.sign(
+      { id: 'review-service', role: 'service' },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+  );
+};
 
 // User service helper
-const getUserDetails = async (userId) => {
+// User service helper with token forwarding
+const getUserDetails = async (userId, userToken = null) => {
   try {
-    const response = await axios.get(`${USER_SERVICE_URL}/api/users/${userId}`);
+    // Use the provided user token if available, otherwise generate a service token
+    const token = userToken || generateServiceToken();
+
+    // Include the token in the request headers
+    const response = await axios.get(`${USER_SERVICE_URL}/api/users/${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
     return response.data;
   } catch (error) {
     console.error(`Error fetching user ${userId} details:`, error.message);
@@ -51,17 +71,17 @@ exports.addWatchHistory = async (req, res) => {
     }
 
     // Check if there's an existing record
-    // let watchRecord = await Watch.findOne({ userId, movieId });
-    //
-    // if (watchRecord) {
-    //   // Update existing record
-    //   watchRecord.watchedAt = new Date();
-    //   watchRecord.watchDuration = watchDuration || watchRecord.watchDuration;
-    //   watchRecord.completed = completed !== undefined ? completed : watchRecord.completed;
-    //
-    //   await watchRecord.save();
-    //   res.status(200).json({ message: 'Watch history updated successfully!', watch: watchRecord });
-    // } else {
+    let watchRecord = await Watch.findOne({ userId, movieId });
+
+    if (watchRecord) {
+      // Update existing record
+      watchRecord.watchedAt = new Date();
+      watchRecord.watchDuration = watchDuration || watchRecord.watchDuration;
+      watchRecord.completed = completed !== undefined ? completed : watchRecord.completed;
+
+      await watchRecord.save();
+      res.status(200).json({ message: 'Watch history updated successfully!', watch: watchRecord });
+    } else {
       // Create new record
       const newWatch = new Watch({
         userId,
@@ -72,7 +92,7 @@ exports.addWatchHistory = async (req, res) => {
 
       await newWatch.save();
       res.status(201).json({ message: 'Watch history added successfully!', watch: newWatch });
-    // }
+    }
   } catch (error) {
     console.error('Error adding watch history:', error);
     res.status(500).json({ error: 'Failed to add watch history.', details: error.message });

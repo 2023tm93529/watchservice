@@ -9,14 +9,13 @@ app.use(express.json());
 // Register routes
 app.use('/api/watch', watchRoutes);
 
-// Connect to MongoDB
-mongoose
-  .connect('mongodb://localhost:27017/watch-service', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  })
-  .then(() => console.log('Connected to MongoDB!'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+// Database connection
+const mongoUrl = process.env.MONGO_URL || 'mongodb://mongo-watch:27017/watchservice';
+console.log('Attempting to connect to MongoDB at:', mongoUrl);  // This will show what URL is being used
+
+mongoose.connect(mongoUrl)
+    .then(() => console.log('Successfully connected to MongoDB'))
+    .catch(err => console.error('MongoDB connection error:', err));
 
 // Start the server
 const PORT = process.env.PORT || 3004;
