@@ -10,7 +10,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "B7dx9M#p2s%Lq8j5ZGc!K3vF6tY4wRnE";
 // Generate a service token for when we don't have a user token
 const generateServiceToken = () => {
   return jwt.sign(
-      { id: 'review-service', role: 'service' },
+      { id: 'watch-service', role: 'service' },
       JWT_SECRET,
       { expiresIn: '1h' }
   );
