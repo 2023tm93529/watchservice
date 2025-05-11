@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: watchservice-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: watchservice
+  template:
+    metadata:
+      labels:
+        app: watchservice
+    spec:
+      containers:
+      - name: watchservice
+        image: watchservice-main-watch-service
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3004
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: watchservice-service
+spec:
+  type: NodePort
+  selector:
+    app: watchservice
+  ports:
+  - port: 80
+    targetPort: 3004
+    nodePort: 30011
